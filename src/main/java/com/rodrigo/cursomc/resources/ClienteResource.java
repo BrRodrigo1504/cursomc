@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.rodrigo.cursomc.domain.Categoria;
 import com.rodrigo.cursomc.domain.Cliente;
-import com.rodrigo.cursomc.dto.CategoriaDTO;
 import com.rodrigo.cursomc.dto.ClienteDTO;
 import com.rodrigo.cursomc.dto.ClienteNewDTO;
 import com.rodrigo.cursomc.services.ClienteService;
