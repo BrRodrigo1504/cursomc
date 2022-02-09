@@ -1,5 +1,6 @@
 package com.rodrigo.cursomc.services;
 
+import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,16 +35,22 @@ import com.rodrigo.cursomc.services.exceptions.ObjectNotFoundException;
 public class ClienteService {
 
 	@Autowired
+	private ClienteRepository repo;
+
+	@Autowired
+	private EnderecoRepository enderecoRepository;
+
+	@Autowired
 	private BCryptPasswordEncoder pe;
 
 	@Autowired
 	private S3Service s3Service;
 
 	@Autowired
-	private ClienteRepository repo;
+	private ImageService imageService;
 
-	@Autowired
-	private EnderecoRepository enderecoRepository;
+	@Value("${img.prefix.client.profile}")
+	private String prefix;
 
 	public Cliente find(Integer id) {
 
@@ -75,9 +83,8 @@ public class ClienteService {
 		try {
 			repo.deleteById(id);
 		} catch (DataIntegrityViolationException e) {
-			throw new DataIntegrityException("Não é possivel excluir porque há pedidos relacionados");
+			throw new DataIntegrityException("Não é possível excluir porque há pedidos relacionados");
 		}
-
 	}
 
 	public List<Cliente> findAll() {
@@ -121,12 +128,9 @@ public class ClienteService {
 			throw new AuthorizationException("Acesso negado");
 		}
 
-		URI uri = s3Service.uploadFile(multipartFile);
+		BufferedImage jpgImage = imageService.getJpgImageFromFile(multipartFile);
+		String fileName = prefix + user.getId() + ".jpg";
 
-		Cliente cli = find(user.getId());
-		cli.setImageUrl(uri.toString());
-		repo.save(cli);
-
-		return uri;
+		return s3Service.uploadFile(imageService.getInputStream(jpgImage, "jpg"), fileName, "image");
 	}
 }
